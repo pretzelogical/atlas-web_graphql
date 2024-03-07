@@ -11,41 +11,6 @@ const _ = require('lodash');
 const Task = require('../models/task');
 const Project = require('../models/project');
 
-const tasks = [
-  {
-    id: '1',
-    projectId: '1',
-    title: 'Create your first webpage',
-    weight: 1,
-    description:
-      'Create your first HTML file 0-index.html with: -Add the doctype on the first line (without any comment) -After the doctype open and close a html tag Open your file in your browser (the page should be blank)'
-  },
-  {
-    id: '2',
-    projectId: '1',
-    title: 'Structure your webpage',
-    weight: 1,
-    description:
-      'Copy the content of 0-index.html into 1-index.html Create the head and body sections inside the html tag, create the head and body tags (empty) in this order'
-  }
-];
-
-const projects = [
-  {
-    id: '1',
-    title: 'Advanced HTML',
-    weight: 1,
-    description:
-      "Welcome to the Web Stack specialization. The 3 first projects will give you all basics of the Web development: HTML, CSS and Developer tools. In this project, you will learn how to use HTML tags to structure a web page. No CSS, no styling - don't worry, the final page will be “ugly” it's normal, it's not the purpose of this project. Important note: details are important! lowercase vs uppercase / wrong letter… be careful!"
-  },
-  {
-    id: '2',
-    title: 'Bootstrap',
-    weight: 1,
-    description:
-      'Bootstrap is a free and open-source CSS framework directed at responsive, mobile-first front-end web development. It contains CSS and JavaScript design templates for typography, forms, buttons, navigation, and other interface components.'
-  }
-];
 
 const TaskType = new GraphQLObjectType({
   name: 'Task',
@@ -53,9 +18,7 @@ const TaskType = new GraphQLObjectType({
     id: { type: GraphQLID },
     project: {
       type: ProjectType,
-      resolve: (parent) => {
-        return _.find(projects, (p) => parent.projectId === p.id);
-      }
+      resolve: async (parent) => await Project.findById(parent.projectId).exec()
     },
     title: { type: GraphQLString },
     weight: { type: GraphQLInt },
@@ -71,9 +34,7 @@ const ProjectType = new GraphQLObjectType({
     weight: { type: GraphQLInt },
     tasks: {
       type: new GraphQLList(TaskType),
-      resolve: (parent, args) => {
-        return tasks.filter((t) => t.projectId === parent.id);
-      }
+      resolve: async (parent) => await Task.find({ projectId: { $eq: parent.id }}).exec()
     },
     description: { type: GraphQLString }
   }
@@ -104,13 +65,15 @@ const Mutation = new GraphQLObjectType({
       args: {
         title: { type: new GraphQLNonNull(GraphQLString) },
         weight: { type: new GraphQLNonNull(GraphQLInt) },
-        description: { type: new GraphQLNonNull(GraphQLString) }
+        description: { type: new GraphQLNonNull(GraphQLString) },
+        projectId: { type: new GraphQLNonNull(GraphQLID) }
       },
       resolve: async (parent, args) => {
         const new_task = new Task({
           title: args.title,
           weight: args.weight,
-          description: args.description
+          description: args.description,
+          projectId: args.projectId
         });
         await new_task.save();
         return new_task;
@@ -127,26 +90,22 @@ const rootQuery = new GraphQLObjectType({
       args: {
         id: { type: GraphQLID }
       },
-      resolve: (parent, args) => {
-        return _.find(tasks, (t) => t.id === args.id);
-      }
+      resolve: async (parent, args) => await Task.findById(args.id).exec()
     },
     project: {
       type: ProjectType,
       args: {
         id: { type: GraphQLID }
       },
-      resolve: (parent, args) => {
-        return _.find(projects, (p) => p.id === args.id);
-      }
+      resolve: async (parent, args) => await Project.findById(args.id).exec()
     },
     tasks: {
       type: new GraphQLList(TaskType),
-      resolve: () => tasks
+      resolve: async () => await Task.find({}).exec()
     },
     projects: {
       type: new GraphQLList(ProjectType),
-      resolve: () => projects
+      resolve: async () => await Project.find({}).exec()
     }
   }
 });
