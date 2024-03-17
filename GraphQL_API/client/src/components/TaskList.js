@@ -1,17 +1,8 @@
 import { useState } from 'react';
 // components
 import { useQuery } from 'react-apollo';
-import { gql } from 'apollo-boost';
+import { getTasksQuery } from '../queries/queries';
 
-
-const getTasksQuery = gql`
-  query {
-    tasks {
-      id
-      title
-    }
-  }
-`;
 
 function TaskList(props) {
   const setSelected = useState(null);

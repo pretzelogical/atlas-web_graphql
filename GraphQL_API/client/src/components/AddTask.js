@@ -2,17 +2,8 @@ import {
   useState
   //useEffect
 } from 'react';
-import { gql } from 'apollo-boost';
 import { useQuery } from 'react-apollo';
-
-const getProjectsQuery = gql`
-  query {
-    projects {
-      id
-      title
-    }
-  }
-`;
+import { getProjectsQuery } from '../queries/queries';
 
 function AddTask(props) {
   const [inputs, setInputs] = useState({
