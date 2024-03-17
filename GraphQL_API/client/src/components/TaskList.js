@@ -1,25 +1,41 @@
-import {
-  useState,
-  //useEffect
-} from "react";
+import { useState } from 'react';
 // components
-import TaskDetails from './TaskDetails';
+import { useQuery } from 'react-apollo';
+import { gql } from 'apollo-boost';
+
+
+const getTasksQuery = gql`
+  query {
+    tasks {
+      id
+      title
+    }
+  }
+`;
 
 function TaskList(props) {
-  const [state, setState] = useState({
-    selected: null
-  });
+  const setSelected = useState(null);
+  // eslint-disable-next-line
+  const { loading, error, data } = useQuery(getTasksQuery);
 
-  return ( <
-    div >
-    <
-    ul id = "task-list" > {
+  function displayTasks() {
+    console.log(loading, data);
 
-    } <
-    /ul>  <
-    TaskDetails /
-    > < /
-    div >
+    if (loading) {
+      return <div>Loading tasks...</div>;
+    } else {
+      return data.tasks.map((task) => (
+        <li key={task.id} onClick={() => setSelected(task.id)}>
+          {task.title}
+        </li>
+      ));
+    }
+  }
+
+  return (
+    <div>
+      <ul id="task-list">{displayTasks()}</ul>
+    </div>
   );
 }
 

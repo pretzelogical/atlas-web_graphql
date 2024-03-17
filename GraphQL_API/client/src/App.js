@@ -1,14 +1,15 @@
-import ApolloClient from 'apollo-boost';
-import { ApolloProvider } from 'react-apollo';
 // components
 import TaskList from './components/TaskList';
 import AddTask from './components/AddTask';
 import AddProject from './components/AddProject';
-// apollo client setup
-const client = new ApolloClient({
-  uri: 'http://localhost:4000/graphql'
-});
+import { ApolloClient, InMemoryCache } from '@apollo/client';
+import { ApolloProvider } from '@apollo/react-hooks';
 
+
+const client = new ApolloClient({
+  uri: 'http://localhost:4000/graphql',
+  cache: new InMemoryCache()
+});
 
 function App() {
   return (
@@ -25,3 +26,4 @@ function App() {
 }
 
 export default App;
+
