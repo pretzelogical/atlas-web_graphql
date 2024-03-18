@@ -1,9 +1,7 @@
-import {
-  useState
-  //useEffect
-} from 'react';
-import { useQuery } from 'react-apollo';
-import { getProjectsQuery } from '../queries/queries';
+import { useState } from 'react';
+import { useQuery, useMutation } from 'react-apollo';
+import { getProjectsQuery, addTaskMutation, getTasksQuery } from '../queries/queries';
+
 
 function AddTask(props) {
   const [inputs, setInputs] = useState({
@@ -13,7 +11,9 @@ function AddTask(props) {
     projectId: ''
   });
   // eslint-disable-next-line
-  const { loading, error, data } = useQuery(getProjectsQuery);
+  const projectsData = useQuery(getProjectsQuery);
+  const [addTaskFunc, addTaskData] = useMutation(addTaskMutation);
+
 
   const handleChange = (e) => {
     const newInputs = {
@@ -26,11 +26,10 @@ function AddTask(props) {
   };
 
   function displayProjects() {
-     console.log(loading, data);
-    if (loading) {
+    if (projectsData.loading) {
       return <option> Loading projects... </option>;
     } else {
-      return data.projects.map((project) => {
+      return projectsData.data.projects.map((project) => {
         return (
           <option key={project.id} value={project.id}>
             {' '}
@@ -41,11 +40,27 @@ function AddTask(props) {
     }
   }
 
+  const submitForm = (e) => {
+    e.preventDefault();
+    addTaskFunc({
+      variables: {
+        title: inputs.title,
+        weight: inputs.weight,
+        description: inputs.description,
+        projectId: inputs.projectId
+      },
+      refetchQueries: [{ query: getTasksQuery }]
+    });
+    if (addTaskData.error) {
+      console.error(addTaskData.error);
+    }
+  };
+
   return (
     <form
       class="task"
       id="add-task"
-      /*onSubmit = {...}*/
+      onSubmit = {submitForm}
     >
       <div className="field">
         <label> Task title: </label>{' '}

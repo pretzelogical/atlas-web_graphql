@@ -2,10 +2,13 @@ import { useState } from 'react';
 // components
 import { useQuery } from 'react-apollo';
 import { getTasksQuery } from '../queries/queries';
+import TaskDetails from './TaskDetails';
 
 
 function TaskList(props) {
-  const setSelected = useState(null);
+  const [state, setState] = useState({
+    selected: null
+  })
   // eslint-disable-next-line
   const { loading, error, data } = useQuery(getTasksQuery);
 
@@ -16,7 +19,7 @@ function TaskList(props) {
       return <div>Loading tasks...</div>;
     } else {
       return data.tasks.map((task) => (
-        <li key={task.id} onClick={() => setSelected(task.id)}>
+        <li key={task.id} onClick={() => setState({ selected: task.id })}>
           {task.title}
         </li>
       ));
@@ -26,6 +29,7 @@ function TaskList(props) {
   return (
     <div>
       <ul id="task-list">{displayTasks()}</ul>
+      <TaskDetails taskId={state.selected}/>
     </div>
   );
 }
